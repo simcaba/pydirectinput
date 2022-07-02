@@ -32,6 +32,14 @@ MOUSEEVENTF_MIDDLEDOWN = 0x0020
 MOUSEEVENTF_MIDDLEUP = 0x0040
 MOUSEEVENTF_MIDDLECLICK = MOUSEEVENTF_MIDDLEDOWN + MOUSEEVENTF_MIDDLEUP
 
+#my changes
+MOUSEEVENTF_XTRA1DOWN = 0x0020
+MOUSEEVENTF_XTRA1UP = 0x0040
+MOUSEEVENTF_XTRA1CLICK = MOUSEEVENTF_MIDDLEDOWN + MOUSEEVENTF_MIDDLEUP
+MOUSEEVENTF_XTRA2DOWN = 0x0020
+MOUSEEVENTF_XTRA2UP = 0x0040
+MOUSEEVENTF_XTRA2CLICK = MOUSEEVENTF_MIDDLEDOWN + MOUSEEVENTF_MIDDLEUP
+
 # KeyBdInput Flags
 KEYEVENTF_EXTENDEDKEY = 0x0001
 KEYEVENTF_KEYUP = 0x0002
@@ -287,6 +295,12 @@ def mouseDown(x=None, y=None, button=PRIMARY, duration=None, tween=None, logScre
         ev = MOUSEEVENTF_MIDDLEDOWN
     elif button == SECONDARY or button == RIGHT:
         ev = MOUSEEVENTF_RIGHTDOWN
+    
+    #mychange
+    elif button == XTRA1:
+        ev = MOUSEEVENTF_XTRA1DOWN
+    elif button == XTRA2:
+        ev = MOUSEEVENTF_XTRA2DOWN
 
     if not ev:
         raise ValueError('button arg to _click() must be one of "left", "middle", or "right", not %s' % button)
@@ -311,6 +325,12 @@ def mouseUp(x=None, y=None, button=PRIMARY, duration=None, tween=None, logScreen
         ev = MOUSEEVENTF_MIDDLEUP
     elif button == SECONDARY or button == RIGHT:
         ev = MOUSEEVENTF_RIGHTUP
+        
+    #mychange
+    elif button == XTRA1:
+        ev = MOUSEEVENTF_XTRA1UP
+    elif button == XTRA2:
+        ev = MOUSEEVENTF_XTRA2UP
 
     if not ev:
         raise ValueError('button arg to _click() must be one of "left", "middle", or "right", not %s' % button)
@@ -336,6 +356,12 @@ def click(x=None, y=None, clicks=1, interval=0.0, button=PRIMARY, duration=None,
         ev = MOUSEEVENTF_MIDDLECLICK
     elif button == SECONDARY or button == RIGHT:
         ev = MOUSEEVENTF_RIGHTCLICK
+        
+    #mychange
+    elif button == XTRA1:
+        ev = MOUSEEVENTF_XTRA1CLICK
+    elif button == XTRA2:
+        ev = MOUSEEVENTF_XTRA2CLICK
 
     if not ev:
         raise ValueError('button arg to _click() must be one of "left", "middle", or "right", not %s' % button)
