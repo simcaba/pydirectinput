@@ -18,6 +18,8 @@ MIDDLE = "middle"
 RIGHT = "right"
 PRIMARY = "primary"
 SECONDARY = "secondary"
+XBUTTON1 = "xbutton1"
+XBUTTON2 = "xbutton2"
 
 # Mouse Scan Code Mappings
 MOUSEEVENTF_MOVE = 0x0001
@@ -33,12 +35,9 @@ MOUSEEVENTF_MIDDLEUP = 0x0040
 MOUSEEVENTF_MIDDLECLICK = MOUSEEVENTF_MIDDLEDOWN + MOUSEEVENTF_MIDDLEUP
 
 #my changes
-MOUSEEVENTF_XTRA1DOWN = 0x0020
-MOUSEEVENTF_XTRA1UP = 0x0040
-MOUSEEVENTF_XTRA1CLICK = MOUSEEVENTF_MIDDLEDOWN + MOUSEEVENTF_MIDDLEUP
-MOUSEEVENTF_XTRA2DOWN = 0x0020
-MOUSEEVENTF_XTRA2UP = 0x0040
-MOUSEEVENTF_XTRA2CLICK = MOUSEEVENTF_MIDDLEDOWN + MOUSEEVENTF_MIDDLEUP
+MOUSEEVENTF_XDOWN = 0x0080
+MOUSEEVENTF_XUP = 0x0100
+MOUSEEVENTF_XCLICK = MOUSEEVENTF_XDOWN + MOUSEEVENTF_XUP
 
 # KeyBdInput Flags
 KEYEVENTF_EXTENDEDKEY = 0x0001
@@ -281,6 +280,12 @@ def size():
 
 
 # Main Mouse Functions
+def _size():
+    """Returns the width and height of the screen as a two-integer tuple.
+    Returns:
+      (width, height) tuple of the screen size, in pixels.
+    """
+    return (ctypes.windll.user32.GetSystemMetrics(0), ctypes.windll.user32.GetSystemMetrics(1))
 
 # Ignored parameters: duration, tween, logScreenshot
 @_genericPyDirectInputChecks
@@ -297,19 +302,28 @@ def mouseDown(x=None, y=None, button=PRIMARY, duration=None, tween=None, logScre
         ev = MOUSEEVENTF_RIGHTDOWN
     
     #mychange
-    elif button == XTRA1:
-        ev = MOUSEEVENTF_XTRA1DOWN
-    elif button == XTRA2:
-        ev = MOUSEEVENTF_XTRA2DOWN
+    elif button == XBUTTON1:
+        ev = MOUSEEVENTF_XDOWN
+        mouseData = 0x0001
+    elif button == XBUTTON2:
+        ev = MOUSEEVENTF_XDOWN
+        mouseData = 0x0002
 
     if not ev:
         raise ValueError('button arg to _click() must be one of "left", "middle", or "right", not %s' % button)
-
-    extra = ctypes.c_ulong(0)
-    ii_ = Input_I()
-    ii_.mi = MouseInput(0, 0, 0, ev, 0, ctypes.pointer(extra))
-    x = Input(ctypes.c_ulong(0), ii_)
-    SendInput(1, ctypes.pointer(x), ctypes.sizeof(x))
+    
+    if button != XBUTTON1 and button != XBUTTON2:
+        extra = ctypes.c_ulong(0)
+        ii_ = Input_I()
+        ii_.mi = MouseInput(0, 0, 0, ev, 0, ctypes.pointer(extra))
+        x = Input(ctypes.c_ulong(0), ii_)
+        SendInput(1, ctypes.pointer(x), ctypes.sizeof(x))
+    else:
+        extra = ctypes.c_ulong(0)
+        ii_ = Input_I()
+        ii_.mi = MouseInput(0, 0, mouseData, ev, 0, ctypes.pointer(extra))
+        x = Input(ctypes.c_ulong(0), ii_)
+        SendInput(1, ctypes.pointer(x), ctypes.sizeof(x))
 
 
 # Ignored parameters: duration, tween, logScreenshot
@@ -327,20 +341,28 @@ def mouseUp(x=None, y=None, button=PRIMARY, duration=None, tween=None, logScreen
         ev = MOUSEEVENTF_RIGHTUP
         
     #mychange
-    elif button == XTRA1:
-        ev = MOUSEEVENTF_XTRA1UP
-    elif button == XTRA2:
-        ev = MOUSEEVENTF_XTRA2UP
+    elif button == XBUTTON1:
+        ev = MOUSEEVENTF_XUP
+        mouseData = 0x0001
+    elif button == XBUTTON2:
+        ev = MOUSEEVENTF_XUP
+        mouseData = 0x0002
 
     if not ev:
         raise ValueError('button arg to _click() must be one of "left", "middle", or "right", not %s' % button)
-
-    extra = ctypes.c_ulong(0)
-    ii_ = Input_I()
-    ii_.mi = MouseInput(0, 0, 0, ev, 0, ctypes.pointer(extra))
-    x = Input(ctypes.c_ulong(0), ii_)
-    SendInput(1, ctypes.pointer(x), ctypes.sizeof(x))
-
+    if button != XBUTTON1 and button != XBUTTON2:
+        extra = ctypes.c_ulong(0)
+        ii_ = Input_I()
+        ii_.mi = MouseInput(0, 0, 0, ev, 0, ctypes.pointer(extra))
+        x = Input(ctypes.c_ulong(0), ii_)
+        SendInput(1, ctypes.pointer(x), ctypes.sizeof(x))
+    
+    else:
+        extra = ctypes.c_ulong(0)
+        ii_ = Input_I()
+        ii_.mi = MouseInput(0, 0, mouseData, ev, 0, ctypes.pointer(extra))
+        x = Input(ctypes.c_ulong(0), ii_)
+        SendInput(1, ctypes.pointer(x), ctypes.sizeof(x))
 
 # Ignored parameters: duration, tween, logScreenshot
 @_genericPyDirectInputChecks
@@ -358,9 +380,9 @@ def click(x=None, y=None, clicks=1, interval=0.0, button=PRIMARY, duration=None,
         ev = MOUSEEVENTF_RIGHTCLICK
         
     #mychange
-    elif button == XTRA1:
+    elif button == XBUTTON1:
         ev = MOUSEEVENTF_XTRA1CLICK
-    elif button == XTRA2:
+    elif button == XBUTTON2:
         ev = MOUSEEVENTF_XTRA2CLICK
 
     if not ev:
@@ -369,11 +391,20 @@ def click(x=None, y=None, clicks=1, interval=0.0, button=PRIMARY, duration=None,
     for i in range(clicks):
         failSafeCheck()
 
-        extra = ctypes.c_ulong(0)
-        ii_ = Input_I()
-        ii_.mi = MouseInput(0, 0, 0, ev, 0, ctypes.pointer(extra))
-        x = Input(ctypes.c_ulong(0), ii_)
-        SendInput(1, ctypes.pointer(x), ctypes.sizeof(x))
+        
+        if button != XBUTTON1 and button != XBUTTON2:
+            extra = ctypes.c_ulong(0)
+            ii_ = Input_I()
+            ii_.mi = MouseInput(0, 0, 0, ev, 0, ctypes.pointer(extra))
+            x = Input(ctypes.c_ulong(0), ii_)
+            SendInput(1, ctypes.pointer(x), ctypes.sizeof(x))
+        
+        else:
+            extra = ctypes.c_ulong(0)
+            ii_ = Input_I()
+            ii_.mi = MouseInput(0, 0, mouseData, ev, 0, ctypes.pointer(extra))
+            x = Input(ctypes.c_ulong(0), ii_)
+            SendInput(1, ctypes.pointer(x), ctypes.sizeof(x))
 
         time.sleep(interval)
 
